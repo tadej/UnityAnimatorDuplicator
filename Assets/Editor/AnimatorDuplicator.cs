@@ -74,6 +74,7 @@ public class AnimatorDuplicator : EditorWindow
 
         var window = GetWindow<AnimatorDuplicator>();
         window.position = new Rect(Screen.width * 0.5f, Screen.height * 0.5f, 480, 160);
+        window.titleContent.text = "Duplicate";
         window.Show();
     }
 
@@ -81,6 +82,7 @@ public class AnimatorDuplicator : EditorWindow
     {
         if (selectedAnimator != null && selectedAnimator is UnityEditor.Animations.AnimatorController)
         {
+            EditorGUILayout.Separator();
             EditorGUILayout.LabelField("ANIMATOR DUPLICATOR", EditorStyles.boldLabel);
             EditorGUILayout.Separator();
 
