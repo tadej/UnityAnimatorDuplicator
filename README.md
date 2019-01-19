@@ -2,7 +2,7 @@
 
 Duplicates a Mechanim animator with the corresponding animations, saving them neatly in subfolders.
 
-![screenshot](https://github.com/tadej/UnityAnimatorDuplicator/raw/master/screens/animatorDuplicator.png "screenshot")
+![screenshot](https://github.com/tadej/UnityAnimatorDuplicator/raw/master/screens/screenshot.png "screenshot")
 
 * right-click on an animator in Project view and select "Duplicate Animator and Animations"
 * edit target animator name
