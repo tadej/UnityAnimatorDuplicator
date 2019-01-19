@@ -10,7 +10,8 @@ Duplicates a Mechanim animator with the corresponding animations, saving them ne
 * creates the folder path, duplicates the animator controller and animations and saves them in subfolders
 
 # Sample Output
-```/parentFolder/child folder/destination/duplicateAnimator.controller
+```
+/parentFolder/child folder/destination/duplicateAnimator.controller
 /parentFolder/child folder/destination/Animations/layer1/animation1.anim
 /parentFolder/child folder/destination/Animations/layer1/animation2.anim
 /parentFolder/child folder/destination/Animations/layer2/animation3.anim
