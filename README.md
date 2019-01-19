@@ -14,3 +14,7 @@ Duplicates a Mechanim animator with the corresponding animations, saving them ne
 * /parentFolder/child folder/destination/Animations/layer1/animation1.anim
 * /parentFolder/child folder/destination/Animations/layer1/animation2.anim
 * /parentFolder/child folder/destination/Animations/layer2/animation3.anim
+
+# Compatibility
+
+Tested with Unity 2018.2.18f1. Let me know if you find any issues with different versions.
