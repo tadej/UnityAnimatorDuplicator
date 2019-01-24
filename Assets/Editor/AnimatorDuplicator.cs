@@ -23,7 +23,6 @@
 using System;
 using UnityEngine;
 using UnityEditor;
-using System.Collections;
 
 public class AnimatorDuplicator : EditorWindow
 {
@@ -36,7 +35,7 @@ public class AnimatorDuplicator : EditorWindow
     [SerializeField]
     protected static string targetFolder = "Animations/Duplicate Animations";
 
-    protected const string editorWindowSettingsName = "AnimatorDuplicator";
+    protected const string editorWindowSettingsName = "Motiviti.AnimatorDuplicator";
 
     private void OnEnable()
     {
@@ -50,7 +49,7 @@ public class AnimatorDuplicator : EditorWindow
         EditorPrefs.SetString(editorWindowSettingsName, data);
     }
 
-    [MenuItem("Assets/Duplicate Animator and Animations")]
+    [MenuItem("Assets/Motiviti Tools/Duplicate Animator and Animations")]
     private static void LoadAdditiveScene()
     {
         if (Selection.objects.Length != 1)
@@ -103,13 +102,13 @@ public class AnimatorDuplicator : EditorWindow
             EditorGUILayout.LabelField("Target folder inside /Assets: ");
             targetFolder = EditorGUILayout.TextField(targetFolder);
 
-            if (GUILayout.Button("Find folder"))
+            if(GUILayout.Button("Find folder"))
             {
                 var selectedFolder = EditorUtility.OpenFolderPanel("Target folder", "", "");
 
-                if (selectedFolder.Contains("Assets"))
+                if(selectedFolder.Contains("Assets"))
                 {
-                    targetFolder = selectedFolder.Substring(selectedFolder.IndexOf("Assets/") + 7);
+                    targetFolder = selectedFolder.Substring(selectedFolder.IndexOf("Assets/")+7);
                 }
             }
 
@@ -119,14 +118,14 @@ public class AnimatorDuplicator : EditorWindow
 
             if (GUILayout.Button("Duplicate animator"))
             {
-                DuplicateAnimator(selectedAnimator, targetAnimatorName, targetFolder);
+                DuplicateAnimator(selectedAnimator, targetAnimatorName);
             }
 
-            if (duplicating)
+            if(duplicating)
             {
                 EditorGUILayout.LabelField("Duplicating ...");
             }
-            else if (currentAnim > 0)
+            else if(currentAnim > 0)
             {
                 EditorGUILayout.LabelField("Done: " + totalAnims.ToString() + " animation states.");
             }
@@ -151,7 +150,7 @@ public class AnimatorDuplicator : EditorWindow
 
     private void GetFolderAndParentPath(string folder, out string outFolder, out string outPath)
     {
-        if (String.IsNullOrEmpty(folder))
+        if(String.IsNullOrEmpty(folder))
         {
             outFolder = outPath = null;
         }
@@ -162,7 +161,7 @@ public class AnimatorDuplicator : EditorWindow
         {
             var pos = folder.LastIndexOf('/');
 
-            outFolder = folder.Substring(pos + 1);
+            outFolder = folder.Substring(pos+1);
             outPath = folder.Substring(0, pos);
         }
         else
@@ -189,7 +188,7 @@ public class AnimatorDuplicator : EditorWindow
 
     private string ProcessFolder(string folder, string path)
     {
-        if (path != null)
+        if(path != null)
         {
             string f1, p1;
             GetFolderAndParentPath(path, out f1, out p1);
@@ -221,8 +220,22 @@ public class AnimatorDuplicator : EditorWindow
         return retFolder;
     }
 
-    private void DuplicateAnimator(UnityEditor.Animations.AnimatorController sourceAnimator, string targetName, string folder)
+    private string TrimStringBeginning(string haystack, string needle)
     {
+        int i = haystack.IndexOf(needle);
+        if(i == 0)
+        {
+            return haystack.Substring(needle.Length);
+        }
+        return haystack;
+    }
+
+    private void DuplicateAnimator(UnityEditor.Animations.AnimatorController sourceAnimator, string targetName)
+    {
+        var folder = AnimatorDuplicator.targetFolder;
+
+        folder = TrimStringBeginning(folder, "Assets");
+
         duplicating = true;
 
         totalAnims = 0;
@@ -244,33 +257,53 @@ public class AnimatorDuplicator : EditorWindow
         UnityEditor.Animations.AnimatorController newAnimator = AssetDatabase.LoadAssetAtPath(newAnimatorPath, typeof(UnityEditor.Animations.AnimatorController)) as UnityEditor.Animations.AnimatorController;
 
         // Iterate through the animation clips on all the layers 
-        foreach (var layer in newAnimator.layers)
-        {
-            foreach (var state in layer.stateMachine.states)
-            {
-                var originalAnimation = state.state.motion as AnimationClip;
-
-                // Some states have no animation clips attached
-                if (originalAnimation != null)
-                {
-                    AnimationClip newAnimation = null;
-
-                    try
-                    {
-                        newAnimation = Instantiate(originalAnimation);
-                        AssetDatabase.CreateAsset(newAnimation, ProcessFolder(animFolderStr + "/" + layer.name) + "/" + originalAnimation.name + ".anim");
-                        state.state.motion = newAnimation;
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError("Could not duplicate animation clip " + state.state.ToString() + " // " + e.Message);
-                    }
-                }
-
-                currentAnim++;
-            }
-        }
+        ProcessAnimationLayers(animFolderStr, newAnimator);
 
         duplicating = false;
     }
+
+    private void ProcessAnimationLayers(string animFolderStr, UnityEditor.Animations.AnimatorController newAnimator)
+    {
+        foreach (var layer in newAnimator.layers)
+        {
+            ProcessAnimationLayer(animFolderStr, layer.name, layer.stateMachine);
+        }
+    }
+
+    private void ProcessAnimationLayer(string animFolderStr, string layer, UnityEditor.Animations.AnimatorStateMachine parentMachine)
+    {
+        foreach (var state in parentMachine.states)
+        {
+            ProcessAnimationState(animFolderStr, layer, parentMachine.name, state);
+        }
+
+        foreach (var machine in parentMachine.stateMachines)
+        {
+            ProcessAnimationLayer(animFolderStr, layer, machine.stateMachine);
+        }
+    }
+
+    private void ProcessAnimationState(string animFolderStr, string layer, string stateMachine, UnityEditor.Animations.ChildAnimatorState state)
+    {
+        var originalAnimation = state.state.motion as AnimationClip;
+
+        // Some states have no animation clips attached
+        if (originalAnimation != null)
+        {
+            AnimationClip newAnimation = null;
+
+            try
+            {
+                newAnimation = Instantiate(originalAnimation);
+                AssetDatabase.CreateAsset(newAnimation, ProcessFolder(animFolderStr + "/" + layer + "/" + stateMachine) + "/" + originalAnimation.name + ".anim");
+                state.state.motion = newAnimation;
+                currentAnim++;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Could not duplicate animation clip " + state.state.ToString() + " // " + e.Message);
+            }
+        }
+    }
 }
+
