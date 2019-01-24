@@ -1,6 +1,7 @@
 # UnityAnimatorDuplicator
 
 Duplicates a Mechanim animator with the corresponding animations, saving them neatly in subfolders.
+Supports layers and nested state machines.
 
 ![screenshot](https://github.com/tadej/UnityAnimatorDuplicator/raw/master/screens/screenshot.png "screenshot")
 
