@@ -50,7 +50,7 @@ public class AnimatorDuplicator : EditorWindow
     }
 
     [MenuItem("Assets/Motiviti Tools/Duplicate Animator and Animations")]
-    private static void LoadAdditiveScene()
+    private static void ShowDuplicatorMenu()
     {
         if (Selection.objects.Length != 1)
         {
